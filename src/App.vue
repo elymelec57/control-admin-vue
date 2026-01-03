@@ -22,7 +22,7 @@ onMounted(() => {
 const verifyToken = async () => {
   try {
     const { response } = await api.post('me');
-    
+    console.log(response)
     if (response.status == false) {
       router.push('/login');
     }else{
