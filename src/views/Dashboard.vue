@@ -2,16 +2,18 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { 
   LayoutDashboard, Users, Settings, ShieldCheck, 
-  LogOut, Search, Bell, UserPlus, Menu, X, ChevronLeft 
+  LogOut, Search, Bell, UserPlus, Plus, Menu, X, ChevronLeft 
 } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
+import api from '../api/axios';
 
 const auth = useAuthStore();
 
 // Estados de la interfaz
 const isSidebarOpen = ref(true);
 const isMobile = ref(false);
-const activeTab = ref('usuarios');
+const activeTab = ref('dashboard');
+const loading = ref(false)
 
 // Datos de ejemplo
 const menuItems = [
@@ -21,6 +23,8 @@ const menuItems = [
   { id: 'config', name: 'Ajustes', icon: Settings },
 ];
 
+const users = ref({})
+const roles = ref({})
 // Control de responsividad
 const checkScreenSize = () => {
   isMobile.value = window.innerWidth < 1024;
@@ -35,6 +39,41 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize);
 });
+
+const consult = async (id) => {
+  activeTab.value = id
+  loading.value = true
+  if(activeTab.value == 'usuarios'){
+    try {
+      const rest = await api.get('users')
+      if(rest.data.status){
+        users.value = rest.data.users
+      }else{
+        alert(`error ${rest.data.message}`)
+      }
+    } catch (error) {
+        alert('error al buscar los usuarios')
+      console.log(error)
+    }finally{
+      loading.value = false
+    }
+  }
+
+  if(activeTab.value == 'roles'){
+    try {
+      const rest = await api.get('roles')
+      if(rest.data.status){
+        roles.value = rest.data.roles
+      }else{
+        alert(`error ${rest.data.message}`)
+      }
+    } catch (error) {
+      alert(`error: ${error}`)
+    }finally{
+      loading.value = false
+    }
+  }  
+}
 
 const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
 </script>
@@ -69,7 +108,7 @@ const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
       <nav class="flex-1 px-3 mt-4 space-y-1">
         <button 
           v-for="item in menuItems" :key="item.id"
-          @click="activeTab = item.id"
+          @click="consult(item.id)"
           :class="[
             'w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group relative',
             activeTab === item.id ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-500 hover:bg-slate-100'
@@ -123,7 +162,20 @@ const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
       </header>
 
       <main class="p-4 lg:p-8 overflow-y-auto">
-        <div class="max-w-7xl mx-auto">
+        <div class="max-w-7xl mx-auto" v-show="activeTab == 'dashboard'">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
+              <p class="text-slate-500 text-sm">Todo el control en un lugar.</p>
+            </div>
+            <button class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 transition-all active:scale-95">
+              <UserPlus class="w-5 h-5" />
+              <span></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto" v-show="activeTab == 'usuarios'">
           
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
@@ -147,15 +199,16 @@ const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                  <tr v-for="i in 5" :key="i" class="hover:bg-slate-50/50">
+                  <template v-if="!loading">
+                  <tr v-for="u in users" :key="u.id" class="hover:bg-slate-50/50">
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-sm">
-                          U{{i}}
+                          U{{u.id}}
                         </div>
                         <div class="min-w-0">
-                          <p class="font-semibold text-slate-700 truncate">Usuario Ejemplo {{i}}</p>
-                          <p class="text-xs text-slate-400 truncate text-ellipsis">usuario{{i}}@sistema.com</p>
+                          <p class="font-semibold text-slate-700 truncate">{{ u.name }}</p>
+                          <p class="text-xs text-slate-400 truncate text-ellipsis">{{ u.email }}</p>
                         </div>
                       </div>
                     </td>
@@ -170,11 +223,69 @@ const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
                       </button>
                     </td>
                   </tr>
+                  </template>
+                  <template v-else>
+                    <tr class="text-center p-3">cargando...</tr>
+                  </template>
                 </tbody>
               </table>
             </div>
           </div>
 
+        </div>
+        <div class="max-w-7xl mx-auto" v-show="activeTab == 'roles'">
+             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900">Gestión de Roles</h1>
+                <p class="text-slate-500 text-sm">Visualiza y edita los roles de tu equipo.</p>
+              </div>
+              <button class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                <Plus class="w-5 h-5" />
+                <span>Añadir Rol</span>
+              </button>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50/50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Usuario</th>
+                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                  <template v-if="!loading">
+                  <tr v-for="r in roles" :key="r.id" class="hover:bg-slate-50/50">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-sm">
+                          {{r.id}}
+                        </div>
+                        <div class="min-w-0">
+                          <p class="font-semibold text-slate-700 truncate">{{ r.name }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100">
+                        Activo
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button class="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors">
+                        <Settings class="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                  </template>
+                  <template v-else>
+                    <tr class="text-center p-3">cargando...</tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </main>
     </div>
