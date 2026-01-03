@@ -1,0 +1,23 @@
+{
+  "name": "vue-jwt-auth-wizard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "feather-icons": "^4.29.0",
+    "lucide-vue-next": "^0.562.0",
+    "pinia": "^3.0.4",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.3.3",
+    "vite": "^4.4.5"
+  }
+}
