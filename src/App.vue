@@ -22,10 +22,11 @@ onMounted(() => {
 const verifyToken = async () => {
   try {
     const { response } = await api.post('me');
-    auth.setAuthUser(response.auth);
+    
     if (response.status == false) {
       router.push('/login');
     }else{
+      auth.setAuthUser(response.auth);
       router.push('/dashboard');
     }
   } catch (error) {
