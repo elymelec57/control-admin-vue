@@ -23,10 +23,10 @@ const verifyToken = async () => {
   try {
     const response = await api.post('me');
     console.log(response)
-    if (response.status == false) {
+    if (response.data.status == false) {
       router.push('/login');
     }else{
-      auth.setAuthUser(response.auth);
+      auth.setAuthUser(response.data.auth);
       router.push('/dashboard');
     }
   } catch (error) {
