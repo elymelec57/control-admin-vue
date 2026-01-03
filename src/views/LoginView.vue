@@ -23,7 +23,7 @@
             />
           </div>
           <div>
-            <label for="password" class="sr-only">Password</label>
+            <label for="password" class="sr-only">Passwordd</label>
             <input
               id="password"
               v-model="form.password"
