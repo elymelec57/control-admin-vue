@@ -1,0 +1,11 @@
+
+> vue-jwt-auth-wizard@0.0.0 dev
+> vite
+
+
+  VITE v4.5.14  ready in 471 ms
+
+  ➜  Local:   http://localhost:3000/control-admin-vue/
+  ➜  Network: use --host to expose
+1:47:47 AM [vite] page reload src/router/index.js
+1:47:50 AM [vite] hmr update /src/App.vue

@@ -2,10 +2,13 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { 
   LayoutDashboard, Users, Settings, ShieldCheck, 
-  LogOut, Search, Bell, UserPlus, Plus, Menu, X, ChevronLeft 
+  LogOut, Search, Bell, UserPlus, Plus, Menu, X, ChevronLeft, Utensils
 } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import api from '../api/axios';
+import NewUserModal from '../components/NewUserModal.vue';
+import NewRestaurantModal from '../components/NewRestaurantModal.vue';
+import NewRoleModal from '../components/NewRoleModal.vue';
 
 const auth = useAuthStore();
 
@@ -14,17 +17,22 @@ const isSidebarOpen = ref(true);
 const isMobile = ref(false);
 const activeTab = ref('dashboard');
 const loading = ref(false)
+const showNewUserModal = ref(false);
+const showNewRestaurantModal = ref(false);
+const showNewRoleModal = ref(false);
 
 // Datos de ejemplo
 const menuItems = [
   { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
   { id: 'usuarios', name: 'Usuarios', icon: Users },
   { id: 'roles', name: 'Roles', icon: ShieldCheck },
+  { id: 'restaurante', name: 'Restaurante', icon: Utensils },
   { id: 'config', name: 'Ajustes', icon: Settings },
 ];
 
 const users = ref({})
 const roles = ref({})
+const restaurantes = ref({})
 // Control de responsividad
 const checkScreenSize = () => {
   isMobile.value = window.innerWidth < 1024;
@@ -72,14 +80,65 @@ const consult = async (id) => {
     }finally{
       loading.value = false
     }
-  }  
+  }
+
+  if(activeTab.value == 'restaurante'){
+    try {
+      const rest = await api.get('restaurantes')
+      if(rest.data.status){
+        restaurantes.value = rest.data.restaurantes
+      }else{
+        alert(`error ${rest.data.message}`)
+      }
+    } catch (error) {
+      alert(`error: ${error}`)
+    }finally{
+      loading.value = false
+    }
+  }
 }
 
 const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
+
+const handleSaveUser = async (userData) => {
+  try {
+    await api.post('users', userData);
+    showNewUserModal.value = false;
+    consult('usuarios'); // Refresh user list
+  } catch (error) {
+    alert('Error al guardar el usuario');
+    console.error(error);
+  }
+};
+
+const handleSaveRestaurant = async (restaurantData) => {
+  try {
+    await api.post('restaurantes', restaurantData);
+    showNewRestaurantModal.value = false;
+    consult('restaurante'); // Refresh restaurant list
+  } catch (error) {
+    alert('Error al guardar el restaurante');
+    console.error(error);
+  }
+};
+
+const handleSaveRole = async (roleData) => {
+  try {
+    await api.post('roles', roleData);
+    showNewRoleModal.value = false;
+    consult('roles'); // Refresh role list
+  } catch (error) {
+    alert('Error al guardar el rol');
+    console.error(error);
+  }
+};
 </script>
 
 <template>
   <div class="flex h-screen bg-gray-50 overflow-hidden font-sans text-slate-900">
+    <NewUserModal v-if="showNewUserModal" @close="showNewUserModal = false" @save="handleSaveUser" />
+    <NewRestaurantModal v-if="showNewRestaurantModal" @close="showNewRestaurantModal = false" @save="handleSaveRestaurant" />
+    <NewRoleModal v-if="showNewRoleModal" @close="showNewRoleModal = false" @save="handleSaveRole" />
     
     <div 
       v-if="isMobile && isSidebarOpen" 
@@ -182,7 +241,7 @@ const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
               <h1 class="text-2xl font-bold text-slate-900">Gestión de Usuarios</h1>
               <p class="text-slate-500 text-sm">Visualiza y edita los privilegios de tu equipo.</p>
             </div>
-            <button class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 transition-all active:scale-95">
+            <button @click="showNewUserModal = true" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 transition-all active:scale-95">
               <UserPlus class="w-5 h-5" />
               <span>Añadir Usuario</span>
             </button>
@@ -239,7 +298,7 @@ const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
                 <h1 class="text-2xl font-bold text-slate-900">Gestión de Roles</h1>
                 <p class="text-slate-500 text-sm">Visualiza y edita los roles de tu equipo.</p>
               </div>
-              <button class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 transition-all active:scale-95">
+              <button @click="showNewRoleModal = true" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 transition-all active:scale-95">
                 <Plus class="w-5 h-5" />
                 <span>Añadir Rol</span>
               </button>
@@ -257,6 +316,60 @@ const toggleSidebar = () => isSidebarOpen.value = !isSidebarOpen.value;
                 <tbody class="divide-y divide-slate-50">
                   <template v-if="!loading">
                   <tr v-for="r in roles" :key="r.id" class="hover:bg-slate-50/50">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-sm">
+                          {{r.id}}
+                        </div>
+                        <div class="min-w-0">
+                          <p class="font-semibold text-slate-700 truncate">{{ r.name }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100">
+                        Activo
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button class="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors">
+                        <Settings class="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                  </template>
+                  <template v-else>
+                    <tr class="text-center p-3">cargando...</tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="max-w-7xl mx-auto" v-show="activeTab == 'restaurante'">
+             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900">Gestión de Restaurantes</h1>
+                <p class="text-slate-500 text-sm">Visualiza y edita los restaurantes de tu equipo.</p>
+              </div>
+              <button @click="showNewRestaurantModal = true" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                <Plus class="w-5 h-5" />
+                <span>Añadir Restaurante</span>
+              </button>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50/50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Restaurante</th>
+                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                  <template v-if="!loading">
+                  <tr v-for="r in restaurantes" :key="r.id" class="hover:bg-slate-50/50">
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-sm">
