@@ -1,10 +1,10 @@
 <template>
   <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] transition-opacity flex justify-center items-center p-4">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md w-full scale-in-center">
-      <h2 class="text-xl font-bold text-slate-900 mb-4">{{ isEditing ? 'Editar Rol' : 'Añadir Nuevo Rol' }}</h2>
+      <h2 class="text-xl font-bold text-slate-900 mb-4">{{ isEditing ? 'Editar Categoría' : 'Añadir Nueva Categoría' }}</h2>
       <form @submit.prevent="submitForm">
         <div class="mb-6">
-          <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Nombre del Rol</label>
+          <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Nombre de la Categoría</label>
           <input type="text" id="name" v-model="form.name" class="w-full pl-4 pr-4 py-2 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm" required>
         </div>
         <div class="flex justify-end gap-4">
@@ -24,7 +24,7 @@
 import { ref, onMounted } from 'vue';
 
 const props = defineProps({
-  role: {
+  category: {
     type: Object,
     default: null
   },
@@ -41,8 +41,8 @@ const form = ref({
 });
 
 onMounted(() => {
-  if (props.isEditing && props.role) {
-    form.value.name = props.role.name;
+  if (props.isEditing && props.category) {
+    form.value.name = props.category.nombre;
   }
 });
 

@@ -1,0 +1,380 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import { Plus, Settings, Pencil, Trash2, AlertTriangle, X, ShieldCheck, Users } from 'lucide-vue-next';
+import api from '../api/axios';
+import NewRoleModal from '../components/NewRoleModal.vue';
+import RolEmpleadoModal from '../components/RolEmpleadoModal.vue';
+
+const roles = ref([]);
+const rolesEmpleados = ref([]);
+const loading = ref(false);
+const loadingRolesEmpleados = ref(false);
+const showNewRoleModal = ref(false);
+const showNewRolEmpleadoModal = ref(false);
+const activeMenuId = ref(null);
+const activeMenuRolEmpleadoId = ref(null);
+const showDeleteModal = ref(false);
+const showDeleteRolEmpleadoModal = ref(false);
+const roleToDelete = ref(null);
+const rolEmpleadoToDelete = ref(null);
+const roleToEdit = ref(null);
+const rolEmpleadoToEdit = ref(null);
+const isEditing = ref(false);
+const isEditingRolEmpleado = ref(false);
+const activeTab = ref('roles'); // 'roles' o 'roles-empleados'
+
+const fetchRoles = async () => {
+  loading.value = true;
+  try {
+    const rest = await api.get('roles');
+    if (rest.data.status) {
+      roles.value = rest.data.roles;
+    } else {
+      alert(`error ${rest.data.message}`);
+    }
+  } catch (error) {
+    alert(`error: ${error}`);
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const fetchRolesEmpleados = async () => {
+  loadingRolesEmpleados.value = true;
+  try {
+    const rest = await api.get('rol');
+    if (rest.data.status) {
+      rolesEmpleados.value = rest.data.roles;
+    }
+  } catch (error) {
+    console.error('Error fetching roles empleados:', error);
+  } finally {
+    loadingRolesEmpleados.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchRoles();
+  fetchRolesEmpleados();
+});
+
+async function handleSaveRole(roleData) {
+  try {
+    let rest;
+    if (isEditing.value && roleToEdit.value) {
+      roleData.id = roleToEdit.value.id;
+      rest = await api.put(`roles`, roleData);
+    } else {
+      rest = await api.post('roles', roleData);
+    }
+
+    if (rest.data.status) {
+      alert(isEditing.value ? 'Rol actualizado correctamente' : 'Rol guardado correctamente');
+      fetchRoles();
+      closeRoleModal();
+    } else {
+      alert(`error ${rest.data.message}`);
+    }
+  } catch (error) {
+    alert('error al procesar la solicitud');
+    console.error(error);
+  }
+}
+
+const toggleMenu = (id) => {
+  if (activeMenuId.value === id) {
+    activeMenuId.value = null;
+  } else {
+    activeMenuId.value = id;
+  }
+};
+
+const openAddModal = () => {
+  isEditing.value = false;
+  roleToEdit.value = null;
+  showNewRoleModal.value = true;
+};
+
+const openEditModal = (role) => {
+  isEditing.value = true;
+  roleToEdit.value = role;
+  activeMenuId.value = null;
+  showNewRoleModal.value = true;
+};
+
+const closeRoleModal = () => {
+  showNewRoleModal.value = false;
+  isEditing.value = false;
+  roleToEdit.value = null;
+};
+
+const confirmDelete = (role) => {
+  roleToDelete.value = role;
+  showDeleteModal.value = true;
+  activeMenuId.value = null;
+};
+
+const handleDelete = async () => {
+  if (!roleToDelete.value) return;
+  
+  try {
+    const rest = await api.delete(`roles/${roleToDelete.value.id}`);
+    if (rest.data.status) {
+      alert('Rol eliminado correctamente');
+      fetchRoles();
+    } else {
+      alert(`error ${rest.data.message}`);
+    }
+  } catch (error) {
+    alert('error al eliminar el rol');
+  } finally {
+    showDeleteModal.value = false;
+    roleToDelete.value = null;
+  }
+};
+
+// Funciones para Roles de Empleados
+async function handleSaveRolEmpleado(rolData) {
+  try {
+    let rest;
+    if (isEditingRolEmpleado.value && rolEmpleadoToEdit.value) {
+      rolData.id = rolEmpleadoToEdit.value.id;
+      rest = await api.put(`rol`, rolData);
+    } else {
+      rest = await api.post('rol', rolData);
+    }
+
+    if (rest.data.status) {
+      alert(isEditingRolEmpleado.value ? 'Rol de empleado actualizado correctamente' : 'Rol de empleado guardado correctamente');
+      fetchRolesEmpleados();
+      closeRolEmpleadoModal();
+    } else {
+      alert(`error ${rest.data.message}`);
+    }
+  } catch (error) {
+    alert('error al procesar la solicitud');
+    console.error(error);
+  }
+}
+
+const toggleMenuRolEmpleado = (id) => {
+  if (activeMenuRolEmpleadoId.value === id) {
+    activeMenuRolEmpleadoId.value = null;
+  } else {
+    activeMenuRolEmpleadoId.value = id;
+  }
+};
+
+const openAddRolEmpleadoModal = () => {
+  isEditingRolEmpleado.value = false;
+  rolEmpleadoToEdit.value = null;
+  showNewRolEmpleadoModal.value = true;
+};
+
+const openEditRolEmpleadoModal = (rol) => {
+  isEditingRolEmpleado.value = true;
+  rolEmpleadoToEdit.value = rol;
+  activeMenuRolEmpleadoId.value = null;
+  showNewRolEmpleadoModal.value = true;
+};
+
+const closeRolEmpleadoModal = () => {
+  showNewRolEmpleadoModal.value = false;
+  isEditingRolEmpleado.value = false;
+  rolEmpleadoToEdit.value = null;
+};
+
+const confirmDeleteRolEmpleado = (rol) => {
+  rolEmpleadoToDelete.value = rol;
+  showDeleteRolEmpleadoModal.value = true;
+  activeMenuRolEmpleadoId.value = null;
+};
+
+const handleDeleteRolEmpleado = async () => {
+  if (!rolEmpleadoToDelete.value) return;
+  
+  try {
+    const rest = await api.delete(`rol/${rolEmpleadoToDelete.value.id}`);
+    if (rest.data.status) {
+      alert('Rol de empleado eliminado correctamente');
+      fetchRolesEmpleados();
+    } else {
+      alert(`error ${rest.data.message}`);
+    }
+  } catch (error) {
+    alert('error al eliminar el rol de empleado');
+  } finally {
+    showDeleteRolEmpleadoModal.value = false;
+    rolEmpleadoToDelete.value = null;
+  }
+};
+
+// Cerrar menús al hacer clic en cualquier lugar
+const handleWindowClick = (event) => {
+  if (!event.target.closest('.menu-container')) {
+    activeMenuId.value = null;
+    activeMenuRolEmpleadoId.value = null;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('click', handleWindowClick);
+});
+
+import { onUnmounted } from 'vue';
+onUnmounted(() => {
+  window.removeEventListener('click', handleWindowClick);
+});
+</script>
+
+<template>
+  <div>
+    <NewRoleModal 
+      v-if="showNewRoleModal" 
+      :role="roleToEdit"
+      :is-editing="isEditing"
+      @close="closeRoleModal" 
+      @save="handleSaveRole" 
+    />
+
+    <!-- Modal de confirmación de eliminación -->
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl scale-in-center">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
+            <AlertTriangle class="w-6 h-6" />
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">¿Eliminar rol?</h3>
+            <p class="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
+          </div>
+        </div>
+        <p class="text-slate-600 mb-6">
+          ¿Estás seguro de que quieres eliminar el rol <span class="font-semibold text-slate-900">{{ roleToDelete?.name }}</span>?
+        </p>
+        <div class="flex gap-3">
+          <button @click="showDeleteModal = false" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
+            Cancelar
+          </button>
+          <button @click="handleDelete" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">Gestión de Roles</h1>
+        <p class="text-slate-500 text-sm">Visualiza y edita los roles de tu equipo.</p>
+      </div>
+      <button @click="openAddModal" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 transition-all active:scale-95">
+        <Plus class="w-5 h-5" />
+        <span>Añadir Rol</span>
+      </button>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50/50 border-b border-slate-100">
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">ID</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Nombre del Rol</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50">
+            <template v-if="!loading">
+              <tr v-for="r in roles" :key="r.id" class="hover:bg-slate-50/50">
+                <td class="px-6 py-4 text-sm font-medium text-slate-600">
+                  #{{r.id}}
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold">
+                      {{ r.name.charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="font-semibold text-slate-700">{{ r.name }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-sm">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100">
+                    Activo
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <div class="relative inline-block text-left menu-container">
+                    <button 
+                      @click.stop="toggleMenu(r.id)"
+                      class="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors focus:outline-none"
+                    >
+                      <Settings class="w-5 h-5" />
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div 
+                      v-if="activeMenuId === r.id"
+                      class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 overflow-hidden scale-in-center"
+                    >
+                      <button 
+                        @click="openEditModal(r)"
+                        class="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
+                      >
+                        <Pencil class="w-4 h-4" />
+                        Editar
+                      </button>
+                      <button 
+                        @click="confirmDelete(r)"
+                        class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors text-left"
+                      >
+                        <Trash2 class="w-4 h-4" />
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr>
+                <td colspan="4" class="text-center p-8 text-slate-500">
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p>Cargando roles...</p>
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <tr v-if="!loading && roles.length === 0">
+              <td colspan="4" class="text-center p-8 text-slate-500">
+                No se encontraron roles.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </div>
+</template>
+
+<style scoped>
+.scale-in-center {
+	animation: scale-in-center 0.15s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes scale-in-center {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+</style>

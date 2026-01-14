@@ -1,17 +1,25 @@
-//import { createRouter, createWebHistory } from 'vue-router';
 import { createRouter, createWebHashHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
-// Importa tus componentes de vista
-import DashboardHome from '../views/Dashboard.vue';
+// Layouts
+import DashboardLayout from '../layouts/DashboardLayout.vue';
+
+// Views
 import Login from '../views/LoginView.vue';
+import DashboardHome from '../views/Dashboard.vue';
+import UsersView from '../views/UsersView.vue';
+import RolesView from '../views/RolesView.vue';
+import SettingsView from '../views/SettingsView.vue';
+import CategoriaRestaurantView from '../views/CategoriaRestaurantView.vue';
+import CategoriaPlatosView from '../views/CategoriaPlatosView.vue';
+import IngredientesView from '../views/IngredientesView.vue';
+import RestaurantsView from '../views/RestaurantsView.vue';
 
 const routes = [
     {
         path: '/',
         name: 'home',
-        component: Login,
-        meta: { requiresAuth: false }
+        redirect: '/dashboard',
     },
     {
         path: '/login',
@@ -20,16 +28,52 @@ const routes = [
         meta: { requiresAuth: false }
     },
     {
-        path: '/dashboard',
-        name: 'dashboard',
-        component: DashboardHome,
-        meta: { requiresAuth: true }
-    },
-    // {
-    //     path: '/configuracion',
-    //     name: 'settings',
-    //     component: () => import('../views/Settings.vue') // Carga perezosa (Lazy Loading)
-    // }
+        path: '/',
+        component: DashboardLayout,
+        meta: { requiresAuth: true },
+        children: [
+            {
+                path: 'dashboard',
+                name: 'dashboard',
+                component: DashboardHome,
+            },
+            {
+                path: 'usuarios',
+                name: 'usuarios',
+                component: UsersView,
+            },
+            {
+                path: 'roles',
+                name: 'roles',
+                component: RolesView,
+            },
+            {
+                path: 'categorias-restaurant',
+                name: 'categorias-restaurant',
+                component: CategoriaRestaurantView,
+            },
+            {
+                path: 'categorias-platos',
+                name: 'categorias-platos',
+                component: CategoriaPlatosView,
+            },
+            {
+                path: 'ingredientes',
+                name: 'ingredientes',
+                component: IngredientesView,
+            },
+            {
+                path: 'configuracion',
+                name: 'config',
+                component: SettingsView,
+            },
+            {
+                path: 'restaurantes',
+                name: 'restaurantes',
+                component: RestaurantsView,
+            }
+        ]
+    }
 ];
 
 const router = createRouter({
@@ -46,17 +90,5 @@ router.beforeEach((to, from, next) => {
         next();
     }
 });
-
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': 'http://localhost:6001',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'Access-Control-Allow-Credentials': 'true',
-        },
-    })
-}
 
 export default router;
