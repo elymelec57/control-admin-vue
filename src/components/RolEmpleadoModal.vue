@@ -4,8 +4,8 @@
       <h2 class="text-xl font-bold text-slate-900 mb-4">{{ isEditing ? 'Editar Rol de Empleado' : 'Añadir Nuevo Rol de Empleado' }}</h2>
       <form @submit.prevent="submitForm">
         <div class="mb-6">
-          <label for="nombre" class="block text-sm font-medium text-slate-700 mb-1">Nombre del Rol</label>
-          <input type="text" id="nombre" v-model="form.nombre" class="w-full pl-4 pr-4 py-2 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm" required>
+          <label for="name" class="block text-sm font-medium text-slate-700 mb-1">name del Rol</label>
+          <input type="text" id="name" v-model="form.name" class="w-full pl-4 pr-4 py-2 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm" required>
         </div>
 
         <div class="flex justify-end gap-4">
@@ -38,12 +38,12 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save']);
 
 const form = ref({
-  nombre: ''
+  name: ''
 });
 
 onMounted(() => {
   if (props.isEditing && props.rol) {
-    form.value.nombre = props.rol.nombre;
+    form.value.name = props.rol.name;
   }
 });
 

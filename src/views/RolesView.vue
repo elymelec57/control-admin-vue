@@ -371,9 +371,9 @@ const handleDeleteRolEmpleado = async () => {
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
-                          {{ rol.nombre.charAt(0).toUpperCase() }}
+                          {{ rol.name.charAt(0).toUpperCase() }}
                         </div>
-                        <span class="font-semibold text-slate-700">{{ rol.nombre }}</span>
+                        <span class="font-semibold text-slate-700">{{ rol.name }}</span>
                       </div>
                     </td>
                     <td class="px-6 py-4 text-sm">
