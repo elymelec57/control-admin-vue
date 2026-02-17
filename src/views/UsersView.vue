@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { UserPlus, Settings, AlertTriangle, X, Search } from 'lucide-vue-next';
+import { UserPlus, Settings, X, Search } from 'lucide-vue-next';
 import api from '../api/axios';
 import ToggleMenu from '../components/ToggleMenu.vue';
 import NewUserModal from '../components/NewUserModal.vue';
+import ModalDelete from '../components/ModalDelete.vue';
 
 const users = ref([]);
 const roles = ref([]);
@@ -142,30 +143,15 @@ const handleDelete = async () => {
     />
 
     <!-- Modal de confirmación de eliminación -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl scale-in-center">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
-            <AlertTriangle class="w-6 h-6" />
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">¿Eliminar usuario?</h3>
-            <p class="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
-          </div>
-        </div>
-        <p class="text-slate-600 mb-6">
-          ¿Estás seguro de que quieres eliminar a <span class="font-semibold text-slate-900">{{ userToDelete?.name }}</span>?
-        </p>
-        <div class="flex gap-3">
-          <button @click="showDeleteModal = false" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
-            Cancelar
-          </button>
-          <button @click="handleDelete" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <ModalDelete 
+      v-if="showDeleteModal"
+      :modelToDelete="userToDelete"
+      :title="'¿Eliminar usuario?'"
+      :messages="'¿Estás seguro de que quieres eliminar a '"
+      :messages2="'Esta acción no se puede deshacer.'"
+      @close="showDeleteModal = false" 
+      @confirm="handleDelete" 
+    />
 
     <div class="max-w-7xl mx-auto">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">

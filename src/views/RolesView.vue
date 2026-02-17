@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { Plus, Settings, Pencil, Trash2, AlertTriangle, X, ShieldCheck, Users } from 'lucide-vue-next';
+import { Plus, AlertTriangle, X, ShieldCheck, Users } from 'lucide-vue-next';
 import ToggleMenu from '../components/ToggleMenu.vue';
 import api from '../api/axios';
 import NewRoleModal from '../components/NewRoleModal.vue';
 import RolEmpleadoModal from '../components/RolEmpleadoModal.vue';
+import ModalDelete from '../components/ModalDelete.vue';
 
 const roles = ref([]);
 const rolesEmpleados = ref([]);
@@ -209,56 +210,26 @@ const handleDeleteRolEmpleado = async () => {
     />
 
     <!-- Modal de confirmación de eliminación -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl scale-in-center">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
-            <AlertTriangle class="w-6 h-6" />
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">¿Eliminar rol?</h3>
-            <p class="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
-          </div>
-        </div>
-        <p class="text-slate-600 mb-6">
-          ¿Estás seguro de que quieres eliminar el rol <span class="font-semibold text-slate-900">{{ roleToDelete?.name }}</span>?
-        </p>
-        <div class="flex gap-3">
-          <button @click="showDeleteModal = false" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
-            Cancelar
-          </button>
-          <button @click="handleDelete" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <ModalDelete 
+      v-if="showDeleteModal"
+      :modelToDelete="roleToDelete"
+      :title="'¿Eliminar rol?'"
+      :messages="'¿Estás seguro de que quieres eliminar el rol '"
+      :messages2="'Esta acción no se puede deshacer.'"
+      @close="showDeleteModal = false"
+      @delete="handleDelete"
+    />
 
     <!-- Modal de confirmación de eliminación de rol de empleado -->
-    <div v-if="showDeleteRolEmpleadoModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl scale-in-center">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
-            <AlertTriangle class="w-6 h-6" />
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">¿Eliminar rol de empleado?</h3>
-            <p class="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
-          </div>
-        </div>
-        <p class="text-slate-600 mb-6">
-          ¿Estás seguro de que quieres eliminar el rol <span class="font-semibold text-slate-900">{{ rolEmpleadoToDelete?.nombre }}</span>?
-        </p>
-        <div class="flex gap-3">
-          <button @click="showDeleteRolEmpleadoModal = false" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
-            Cancelar
-          </button>
-          <button @click="handleDeleteRolEmpleado" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <ModalDelete 
+      v-if="showDeleteRolEmpleadoModal"
+      :modelToDelete="rolEmpleadoToDelete"
+      :title="'¿Eliminar rol de empleado?'"
+      :messages="'¿Estás seguro de que quieres eliminar el rol de empleado '"
+      :messages2="'Esta acción no se puede deshacer.'"
+      @close="showDeleteRolEmpleadoModal = false"
+      @delete="handleDeleteRolEmpleado"
+    />
 
     <div class="max-w-7xl mx-auto">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -412,8 +383,8 @@ const handleDeleteRolEmpleado = async () => {
                     </td>
                     <td class="px-6 py-4 text-right">
                       <ToggleMenu :user="rol" 
-                      @open-edit-modal="openEditModal" 
-                      @confirm-delete="confirmDelete" />
+                      @open-edit-modal="openEditRolEmpleadoModal" 
+                      @confirm-delete="confirmDeleteRolEmpleado(rol)" />
                     </td>
                   </tr>
                 </template>
