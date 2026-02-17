@@ -1,14 +1,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { UserPlus, Settings, Pencil, Trash2, AlertTriangle, X, Search } from 'lucide-vue-next';
+import { UserPlus, Settings, AlertTriangle, X, Search } from 'lucide-vue-next';
 import api from '../api/axios';
+import ToggleMenu from '../components/ToggleMenu.vue';
 import NewUserModal from '../components/NewUserModal.vue';
 
 const users = ref([]);
 const roles = ref([]);
 const loading = ref(false);
 const showNewUserModal = ref(false);
-const activeMenuId = ref(null);
 const showDeleteModal = ref(false);
 const userToDelete = ref(null);
 const userToEdit = ref(null);
@@ -87,14 +87,6 @@ async function handleSaveUser(userData) {
   }
 }
 
-const toggleMenu = (id) => {
-  if (activeMenuId.value === id) {
-    activeMenuId.value = null;
-  } else {
-    activeMenuId.value = id;
-  }
-};
-
 const openAddModal = () => {
   isEditing.value = false;
   userToEdit.value = null;
@@ -104,7 +96,6 @@ const openAddModal = () => {
 const openEditModal = (user) => {
   isEditing.value = true;
   userToEdit.value = user;
-  activeMenuId.value = null;
   showNewUserModal.value = true;
 };
 
@@ -117,7 +108,6 @@ const closeUserModal = () => {
 const confirmDelete = (user) => {
   userToDelete.value = user;
   showDeleteModal.value = true;
-  activeMenuId.value = null;
 };
 
 const handleDelete = async () => {
@@ -139,21 +129,6 @@ const handleDelete = async () => {
   }
 };
 
-// Cerrar menús al hacer clic en cualquier lugar
-const handleWindowClick = (event) => {
-  if (!event.target.closest('.menu-container')) {
-    activeMenuId.value = null;
-  }
-};
-
-onMounted(() => {
-  window.addEventListener('click', handleWindowClick);
-});
-
-import { onUnmounted } from 'vue';
-onUnmounted(() => {
-  window.removeEventListener('click', handleWindowClick);
-});
 </script>
 
 <template>
@@ -260,36 +235,10 @@ onUnmounted(() => {
                     Activo
                   </span>
                 </td>
-                <td class="px-6 py-4 text-right">
-                  <div class="relative inline-block text-left menu-container">
-                    <button 
-                      @click.stop="toggleMenu(u.id)"
-                      class="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors focus:outline-none"
-                    >
-                      <Settings class="w-5 h-5" />
-                    </button>
-                    
-                    <!-- Dropdown Menu -->
-                    <div 
-                      v-if="activeMenuId === u.id"
-                      class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 overflow-hidden scale-in-center"
-                    >
-                      <button 
-                        @click="openEditModal(u)"
-                        class="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
-                      >
-                        <Pencil class="w-4 h-4" />
-                        Editar
-                      </button>
-                      <button 
-                        @click="confirmDelete(u)"
-                        class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors text-left"
-                      >
-                        <Trash2 class="w-4 h-4" />
-                        Eliminar
-                      </button>
-                    </div>
-                  </div>
+                <td class="px-6 py-4 text-right static">
+                  <ToggleMenu :user="u" 
+                  @open-edit-modal="openEditModal" 
+                  @confirm-delete="confirmDelete" />
                 </td>
               </tr>
             </template>

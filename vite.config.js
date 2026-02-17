@@ -3,8 +3,8 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/control-admin-vue/',
+  //base: '/control-admin-vue/',
   server: {
-    port: 3000
+    port: 6001
   }
 })
