@@ -217,7 +217,7 @@ const handleDeleteRolEmpleado = async () => {
       :messages="'¿Estás seguro de que quieres eliminar el rol '"
       :messages2="'Esta acción no se puede deshacer.'"
       @close="showDeleteModal = false"
-      @delete="handleDelete"
+      @confirm="handleDelete"
     />
 
     <!-- Modal de confirmación de eliminación de rol de empleado -->
@@ -228,7 +228,7 @@ const handleDeleteRolEmpleado = async () => {
       :messages="'¿Estás seguro de que quieres eliminar el rol de empleado '"
       :messages2="'Esta acción no se puede deshacer.'"
       @close="showDeleteRolEmpleadoModal = false"
-      @delete="handleDeleteRolEmpleado"
+      @confirm="handleDeleteRolEmpleado"
     />
 
     <div class="max-w-7xl mx-auto">
@@ -315,7 +315,7 @@ const handleDeleteRolEmpleado = async () => {
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                  <ToggleMenu :user="r" 
+                  <ToggleMenu :item="r"
                   @open-edit-modal="openEditModal" 
                   @confirm-delete="confirmDelete" />
                 </td>
@@ -382,7 +382,7 @@ const handleDeleteRolEmpleado = async () => {
                       </span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                      <ToggleMenu :user="rol" 
+                      <ToggleMenu :item="rol"
                       @open-edit-modal="openEditRolEmpleadoModal" 
                       @confirm-delete="confirmDeleteRolEmpleado(rol)" />
                     </td>

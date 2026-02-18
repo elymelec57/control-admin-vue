@@ -222,7 +222,7 @@ const handleDelete = async () => {
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right static">
-                  <ToggleMenu :user="u" 
+                  <ToggleMenu :item="u"
                   @open-edit-modal="openEditModal" 
                   @confirm-delete="confirmDelete" />
                 </td>

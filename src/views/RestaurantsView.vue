@@ -1,14 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { Plus, Settings, Pencil, Trash2, AlertTriangle, Store } from 'lucide-vue-next';
+import { Plus, Store } from 'lucide-vue-next';
 import api from '../api/axios';
 import RestaurantModal from '../components/RestaurantModal.vue';
+import ToggleMenu from '../components/ToggleMenu.vue';
+import ModalDelete from '../components/ModalDelete.vue';
 
 const restaurants = ref([]);
 const loading = ref(false);
 const showModal = ref(false);
 const showDeleteModal = ref(false);
-const activeMenuId = ref(null);
 
 const restaurantToDelete = ref(null);
 const restaurantToEdit = ref(null);
@@ -20,16 +21,11 @@ const fetchRestaurants = async () => {
     const rest = await api.get('restaurante');
     if (rest.data.status) {
       restaurants.value = rest.data.restaurantes || rest.data.data || []; 
-      // Handle potential variations in API response structure
     } else {
-       // Fallback if status is usually true but data might be elsewhere
-       // Some APIs might return data directly or in a different property
-       // Assuming standard wrapper based on RolesView
        if (Array.isArray(rest.data)) {
            restaurants.value = rest.data;
        } else {
            console.error("Unexpected API response structure", rest.data);
-           // Try to create an empty array if invalid
            restaurants.value = [];
        }
     }
@@ -43,12 +39,6 @@ const fetchRestaurants = async () => {
 
 onMounted(() => {
   fetchRestaurants();
-  window.addEventListener('click', handleWindowClick);
-});
-
-import { onUnmounted } from 'vue';
-onUnmounted(() => {
-  window.removeEventListener('click', handleWindowClick);
 });
 
 async function handleSaveRestaurant(data) {
@@ -74,14 +64,6 @@ async function handleSaveRestaurant(data) {
   }
 }
 
-const toggleMenu = (id) => {
-  if (activeMenuId.value === id) {
-    activeMenuId.value = null;
-  } else {
-    activeMenuId.value = id;
-  }
-};
-
 const openAddModal = () => {
   isEditing.value = false;
   restaurantToEdit.value = null;
@@ -91,7 +73,6 @@ const openAddModal = () => {
 const openEditModal = (restaurant) => {
   isEditing.value = true;
   restaurantToEdit.value = restaurant;
-  activeMenuId.value = null;
   showModal.value = true;
 };
 
@@ -104,7 +85,6 @@ const closeModal = () => {
 const confirmDelete = (restaurant) => {
   restaurantToDelete.value = restaurant;
   showDeleteModal.value = true;
-  activeMenuId.value = null;
 };
 
 const handleDelete = async () => {
@@ -127,11 +107,6 @@ const handleDelete = async () => {
   }
 };
 
-const handleWindowClick = (event) => {
-  if (!event.target.closest('.menu-container')) {
-    activeMenuId.value = null;
-  }
-};
 </script>
 
 <template>
@@ -145,30 +120,15 @@ const handleWindowClick = (event) => {
     />
 
     <!-- Modal de confirmación de eliminación -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl scale-in-center">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
-            <AlertTriangle class="w-6 h-6" />
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">¿Eliminar restaurante?</h3>
-            <p class="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
-          </div>
-        </div>
-        <p class="text-slate-600 mb-6">
-          ¿Estás seguro de que quieres eliminar <span class="font-semibold text-slate-900">{{ restaurantToDelete?.nombre }}</span>?
-        </p>
-        <div class="flex gap-3">
-          <button @click="showDeleteModal = false" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
-            Cancelar
-          </button>
-          <button @click="handleDelete" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <ModalDelete
+      v-if="showDeleteModal"
+      :modelToDelete="restaurantToDelete"
+      :title="'¿Eliminar restaurante?'"
+      :messages="'¿Estás seguro de que quieres eliminar '"
+      :messages2="'Esta acción no se puede deshacer.'"
+      @close="showDeleteModal = false"
+      @confirm="handleDelete"
+    />
 
     <div class="max-w-7xl mx-auto">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -219,34 +179,9 @@ const handleWindowClick = (event) => {
                     {{ restaurant.direcction }}
                   </td>
                   <td class="px-6 py-4 text-right">
-                    <div class="relative inline-block text-left menu-container">
-                      <button 
-                        @click.stop="toggleMenu(restaurant.id)"
-                        class="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors focus:outline-none"
-                      >
-                        <Settings class="w-5 h-5" />
-                      </button>
-                      
-                      <div 
-                        v-if="activeMenuId === restaurant.id"
-                        class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 overflow-hidden scale-in-center"
-                      >
-                        <button 
-                          @click="openEditModal(restaurant)"
-                          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
-                        >
-                          <Pencil class="w-4 h-4" />
-                          Editar
-                        </button>
-                        <button 
-                          @click="confirmDelete(restaurant)"
-                          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors text-left"
-                        >
-                          <Trash2 class="w-4 h-4" />
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
+                    <ToggleMenu :item="restaurant"
+                      @open-edit-modal="openEditModal"
+                      @confirm-delete="confirmDelete" />
                   </td>
                 </tr>
               </template>

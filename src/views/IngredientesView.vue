@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { Plus, Settings, Pencil, Trash2, AlertTriangle, Filter, Tag } from 'lucide-vue-next';
+import { Plus, Filter, Tag } from 'lucide-vue-next';
 import api from '../api/axios';
 import IngredienteModal from '../components/IngredienteModal.vue';
 import CategoriaIngredienteModal from '../components/CategoriaIngredienteModal.vue';
+import ToggleMenu from '../components/ToggleMenu.vue';
+import ModalDelete from '../components/ModalDelete.vue';
 
 const ingredientes = ref([]);
 const categorias = ref([]);
@@ -11,8 +13,6 @@ const loading = ref(false);
 const loadingCategorias = ref(false);
 const showNewIngredienteModal = ref(false);
 const showNewCategoriaModal = ref(false);
-const activeMenuId = ref(null);
-const activeMenuCategoriaId = ref(null);
 const showDeleteModal = ref(false);
 const showDeleteCategoriaModal = ref(false);
 const ingredienteToDelete = ref(null);
@@ -89,14 +89,6 @@ async function handleSaveIngrediente(ingredienteData) {
   }
 }
 
-const toggleMenu = (id) => {
-  if (activeMenuId.value === id) {
-    activeMenuId.value = null;
-  } else {
-    activeMenuId.value = id;
-  }
-};
-
 const openAddModal = () => {
   isEditing.value = false;
   ingredienteToEdit.value = null;
@@ -106,7 +98,6 @@ const openAddModal = () => {
 const openEditModal = (ingrediente) => {
   isEditing.value = true;
   ingredienteToEdit.value = ingrediente;
-  activeMenuId.value = null;
   showNewIngredienteModal.value = true;
 };
 
@@ -119,7 +110,6 @@ const closeIngredienteModal = () => {
 const confirmDelete = (ingrediente) => {
   ingredienteToDelete.value = ingrediente;
   showDeleteModal.value = true;
-  activeMenuId.value = null;
 };
 
 const handleDelete = async () => {
@@ -165,14 +155,6 @@ async function handleSaveCategoria(categoriaData) {
   }
 }
 
-const toggleMenuCategoria = (id) => {
-  if (activeMenuCategoriaId.value === id) {
-    activeMenuCategoriaId.value = null;
-  } else {
-    activeMenuCategoriaId.value = id;
-  }
-};
-
 const openAddCategoriaModal = () => {
   isEditingCategoria.value = false;
   categoriaToEdit.value = null;
@@ -182,7 +164,6 @@ const openAddCategoriaModal = () => {
 const openEditCategoriaModal = (categoria) => {
   isEditingCategoria.value = true;
   categoriaToEdit.value = categoria;
-  activeMenuCategoriaId.value = null;
   showNewCategoriaModal.value = true;
 };
 
@@ -195,7 +176,6 @@ const closeCategoriaModal = () => {
 const confirmDeleteCategoria = (categoria) => {
   categoriaToDelete.value = categoria;
   showDeleteCategoriaModal.value = true;
-  activeMenuCategoriaId.value = null;
 };
 
 const handleDeleteCategoria = async () => {
@@ -218,21 +198,6 @@ const handleDeleteCategoria = async () => {
   }
 };
 
-const handleWindowClick = (event) => {
-  if (!event.target.closest('.menu-container')) {
-    activeMenuId.value = null;
-    activeMenuCategoriaId.value = null;
-  }
-};
-
-onMounted(() => {
-  window.addEventListener('click', handleWindowClick);
-});
-
-import { onUnmounted } from 'vue';
-onUnmounted(() => {
-  window.removeEventListener('click', handleWindowClick);
-});
 </script>
 
 <template>
@@ -255,56 +220,26 @@ onUnmounted(() => {
     />
 
     <!-- Modal de confirmación de eliminación de ingrediente -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl scale-in-center">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
-            <AlertTriangle class="w-6 h-6" />
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">¿Eliminar ingrediente?</h3>
-            <p class="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
-          </div>
-        </div>
-        <p class="text-slate-600 mb-6">
-          ¿Estás seguro de que quieres eliminar el ingrediente <span class="font-semibold text-slate-900">{{ ingredienteToDelete?.nombre }}</span>?
-        </p>
-        <div class="flex gap-3">
-          <button @click="showDeleteModal = false" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
-            Cancelar
-          </button>
-          <button @click="handleDelete" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <ModalDelete
+      v-if="showDeleteModal"
+      :modelToDelete="ingredienteToDelete"
+      :title="'¿Eliminar ingrediente?'"
+      :messages="'¿Estás seguro de que quieres eliminar el ingrediente '"
+      :messages2="'Esta acción no se puede deshacer.'"
+      @close="showDeleteModal = false"
+      @confirm="handleDelete"
+    />
 
     <!-- Modal de confirmación de eliminación de categoría -->
-    <div v-if="showDeleteCategoriaModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl scale-in-center">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
-            <AlertTriangle class="w-6 h-6" />
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">¿Eliminar categoría?</h3>
-            <p class="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
-          </div>
-        </div>
-        <p class="text-slate-600 mb-6">
-          ¿Estás seguro de que quieres eliminar la categoría <span class="font-semibold text-slate-900">{{ categoriaToDelete?.nombre }}</span>?
-        </p>
-        <div class="flex gap-3">
-          <button @click="showDeleteCategoriaModal = false" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
-            Cancelar
-          </button>
-          <button @click="handleDeleteCategoria" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <ModalDelete
+      v-if="showDeleteCategoriaModal"
+      :modelToDelete="categoriaToDelete"
+      :title="'¿Eliminar categoría?'"
+      :messages="'¿Estás seguro de que quieres eliminar la categoría '"
+      :messages2="'Esta acción no se puede deshacer.'"
+      @close="showDeleteCategoriaModal = false"
+      @confirm="handleDeleteCategoria"
+    />
 
     <div class="max-w-7xl mx-auto">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -408,34 +343,9 @@ onUnmounted(() => {
                     </span>
                   </td>
                   <td class="px-6 py-4 text-right">
-                    <div class="relative inline-block text-left menu-container">
-                      <button 
-                        @click.stop="toggleMenu(ing.id)"
-                        class="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors focus:outline-none"
-                      >
-                        <Settings class="w-5 h-5" />
-                      </button>
-                      
-                      <div 
-                        v-if="activeMenuId === ing.id"
-                        class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 overflow-hidden scale-in-center"
-                      >
-                        <button 
-                          @click="openEditModal(ing)"
-                          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
-                        >
-                          <Pencil class="w-4 h-4" />
-                          Editar
-                        </button>
-                        <button 
-                          @click="confirmDelete(ing)"
-                          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors text-left"
-                        >
-                          <Trash2 class="w-4 h-4" />
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
+                    <ToggleMenu :item="ing"
+                      @open-edit-modal="openEditModal"
+                      @confirm-delete="confirmDelete" />
                   </td>
                 </tr>
               </template>
@@ -500,34 +410,9 @@ onUnmounted(() => {
                       </span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                      <div class="relative inline-block text-left menu-container">
-                        <button 
-                          @click.stop="toggleMenuCategoria(cat.id)"
-                          class="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors focus:outline-none"
-                        >
-                          <Settings class="w-5 h-5" />
-                        </button>
-                        
-                        <div 
-                          v-if="activeMenuCategoriaId === cat.id"
-                          class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 overflow-hidden scale-in-center"
-                        >
-                          <button 
-                            @click="openEditCategoriaModal(cat)"
-                            class="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
-                          >
-                            <Pencil class="w-4 h-4" />
-                            Editar
-                          </button>
-                          <button 
-                            @click="confirmDeleteCategoria(cat)"
-                            class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors text-left"
-                          >
-                            <Trash2 class="w-4 h-4" />
-                            Eliminar
-                          </button>
-                        </div>
-                      </div>
+                      <ToggleMenu :item="cat"
+                        @open-edit-modal="openEditCategoriaModal"
+                        @confirm-delete="confirmDeleteCategoria" />
                     </td>
                   </tr>
                 </template>

@@ -20,6 +20,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['confirm', 'close']);
+
 const handleDelete = () => {
   emit('confirm');
 };
@@ -28,7 +30,6 @@ const closeDeleteModal = () => {
   emit('close');
 };
 
-const emit = defineEmits(['confirm', 'close']);
 </script>
 
 <template>
@@ -44,7 +45,7 @@ const emit = defineEmits(['confirm', 'close']);
           </div>
         </div>
         <p class="text-slate-600 mb-6">
-          {{ props.messages }}<span class="font-semibold text-slate-900">{{ props.modelToDelete?.name }}</span>?
+          {{ props.messages }}<span class="font-semibold text-slate-900">{{ props.modelToDelete?.name || props.modelToDelete?.nombre }}</span>?
         </p>
         <div class="flex gap-3">
           <button @click="closeDeleteModal" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
@@ -57,3 +58,20 @@ const emit = defineEmits(['confirm', 'close']);
       </div>
     </div>
 </template>
+
+<style scoped>
+.scale-in-center {
+	animation: scale-in-center 0.15s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@keyframes scale-in-center {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+</style>

@@ -3,7 +3,7 @@ import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Settings, Pencil, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps({
-  user: {
+  item: {
     type: Object,
     required: true
   }
@@ -37,17 +37,19 @@ const handleToggle = (id) => {
   }
 };
 
-const openEditModal = (user) => {
-  emit('open-edit-modal', user);
+const openEditModal = (item) => {
+  activeMenuId.value = null;
+  emit('open-edit-modal', item);
 };
 
-const confirmDelete = (user) => {
-  emit('confirm-delete', user);
+const confirmDelete = (item) => {
+  activeMenuId.value = null;
+  emit('confirm-delete', item);
 };
 
 // Update position if window is resized or scrolled
 const handleScrollOrResize = () => {
-  if (props.activeMenuId === props.user.id) {
+  if (activeMenuId.value === props.item.id) {
     updatePosition();
   }
 };
@@ -65,14 +67,14 @@ onUnmounted(() => {
 });
 
 watch(() => activeMenuId.value, (newVal) => {
-  if (newVal === props.user.id) {
+  if (newVal === props.item.id) {
     nextTick(updatePosition);
   }
 });
 
 // Cerrar menús al hacer clic en cualquier lugar
 const handleWindowClick = (event) => {
-  if (!event.target.closest('.menu-container')) {
+  if (buttonRef.value && !buttonRef.value.contains(event.target)) {
     activeMenuId.value = null;
   }
 };
@@ -82,7 +84,7 @@ const handleWindowClick = (event) => {
   <div class="relative inline-block text-left menu-container">
     <button 
       ref="buttonRef"
-      @click.stop="handleToggle(props.user.id)"
+      @click.stop="handleToggle(props.item.id)"
       class="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors focus:outline-none"
     >
       <Settings class="w-5 h-5" />
@@ -91,19 +93,19 @@ const handleWindowClick = (event) => {
     <!-- Dropdown Menu Teleported to Body -->
     <Teleport to="body">
       <div 
-        v-if="activeMenuId === user.id"
+        v-if="activeMenuId === item.id"
         class="absolute w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-[90] py-2 overflow-hidden scale-in-center"
         :style="menuStyle"
       >
         <button 
-          @click="openEditModal(user)"
+          @click="openEditModal(item)"
           class="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
         >
           <Pencil class="w-4 h-4" />
           Editar
         </button>
         <button 
-          @click="confirmDelete(user)"
+          @click="confirmDelete(item)"
           class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors text-left"
         >
           <Trash2 class="w-4 h-4" />
