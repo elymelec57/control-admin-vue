@@ -3,7 +3,8 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { 
   LayoutDashboard, Users, Settings, ShieldCheck, 
-  LogOut, Search, Bell, Menu, ChevronLeft, Utensils, Apple, Store 
+  LogOut, Search, Bell, Menu, ChevronLeft, Utensils, Apple, Store,
+  Package, Wallet, ClipboardCheck
 } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 
@@ -23,6 +24,9 @@ const menuItems = [
   { id: 'categorias', name: 'Categorías restaurante', icon: Utensils, path: '/categorias-restaurant' },
   { id: 'categorias-platos', name: 'Categorías platos', icon: Utensils, path: '/categorias-platos' },
   { id: 'ingredientes', name: 'Ingredientes', icon: Apple, path: '/ingredientes' },
+  { id: 'planes', name: 'Planes', icon: Package, path: '/planes' },
+  { id: 'metodos-pago', name: 'Métodos de Pago', icon: Wallet, path: '/metodos-pago' },
+  { id: 'revision-pagos', name: 'Revisión Pagos', icon: ClipboardCheck, path: '/revision-pagos' },
   { id: 'config', name: 'Ajustes', icon: Settings, path: '/configuracion' },
 ];
 
@@ -88,7 +92,7 @@ const isActive = (path) => {
         </button>
       </div>
 
-      <nav class="flex-1 px-3 mt-4 space-y-1">
+      <nav class="flex-1 px-3 mt-4 space-y-1 overflow-y-auto custom-scrollbar">
         <button 
           v-for="item in menuItems" :key="item.id"
           @click="navigateTo(item.path)"
@@ -166,3 +170,27 @@ const isActive = (path) => {
     </div>
   </div>
 </template>
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+/* Para Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+}
+</style>

@@ -14,6 +14,9 @@ import CategoriaRestaurantView from '../views/CategoriaRestaurantView.vue';
 import CategoriaPlatosView from '../views/CategoriaPlatosView.vue';
 import IngredientesView from '../views/IngredientesView.vue';
 import RestaurantsView from '../views/RestaurantsView.vue';
+import PlanesView from '../views/PlanesView.vue';
+import MetodosPagoView from '../views/MetodosPagoView.vue';
+import RevisionPagoView from '../views/RevisionPagoView.vue';
 
 const routes = [
     {
@@ -71,6 +74,21 @@ const routes = [
                 path: 'restaurantes',
                 name: 'restaurantes',
                 component: RestaurantsView,
+            },
+            {
+                path: 'planes',
+                name: 'planes',
+                component: PlanesView,
+            },
+            {
+                path: 'metodos-pago',
+                name: 'metodos-pago',
+                component: MetodosPagoView,
+            },
+            {
+                path: 'revision-pagos',
+                name: 'revision-pagos',
+                component: RevisionPagoView,
             }
         ]
     }
