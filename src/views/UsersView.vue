@@ -24,6 +24,7 @@ const fetchUsers = async () => {
     const rest = await api.get('users');
     if (rest.data.status) {
       users.value = rest.data.users;
+      roles.value = rest.data.roles;
     } else {
       alert(`error ${rest.data.message}`);
     }
@@ -35,20 +36,8 @@ const fetchUsers = async () => {
   }
 };
 
-const fetchRoles = async () => {
-  try {
-    const rest = await api.get('roles');
-    if (rest.data.status) {
-      roles.value = rest.data.roles;
-    }
-  } catch (error) {
-    console.error('Error fetching roles:', error);
-  }
-};
-
 onMounted(() => {
   fetchUsers();
-  fetchRoles();
 });
 
 const filteredUsers = computed(() => {
