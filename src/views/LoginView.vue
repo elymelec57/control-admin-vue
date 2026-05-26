@@ -110,6 +110,7 @@ const handleLogin = async () => {
       alert(data.message)
     }else{
       alert('Inicio de sesión exitoso')
+      localStorage.setItem('token', data.token);
       router.push('/dashboard')
     }
         

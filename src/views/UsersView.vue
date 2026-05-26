@@ -59,9 +59,17 @@ async function handleSaveUser(userData) {
     let rest;
     if (isEditing.value && userToEdit.value) {
       userData.id = userToEdit.value.id;
-      rest = await api.put(`users`, userData);
+      rest = await api.put(`users`, userData,{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
     } else {
-      rest = await api.post('users', userData);
+      rest = await api.post('users', userData,{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
     }
 
     if (rest.data.status) {
